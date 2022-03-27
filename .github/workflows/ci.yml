@@ -1,0 +1,76 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+    - master
+
+  pull_request:
+    branches:
+    - master
+
+env:
+  VCPKG_COMMIT: 9ff4659a075d5f4f30aaca9f7c4e7f059ecc1d6d
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+      with: { python-version: "3.8" }
+
+    - name: Install codespell
+      run: pip3 install codespell
+
+    - name: Lint
+      run: cmake -D FORMAT_COMMAND=clang-format-11 -P cmake/lint.cmake
+
+    - name: Spell check
+      if: always()
+      run: cmake -P cmake/spell.cmake
+
+  test:
+    needs: [lint]
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-2022]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install static analyzers
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get install clang-tidy cppcheck -y -q
+
+    - name: Install SFML system dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install libx11-dev libxrandr-dev libxi-dev libudev-dev \
+        libgl1-mesa-dev -y -q
+
+    - name: Install vcpkg
+      uses: friendlyanon/setup-vcpkg@v1
+      with:
+        committish: ${{ env.VCPKG_COMMIT }}
+        cache-version: ${{ hashFiles('vcpkg.json') }}
+
+    - name: Configure
+      shell: pwsh
+      run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
+
+    - name: Build
+      run: cmake --build build --config Release -j 2
+
+    - name: Install
+      run: cmake --install build --config Release --prefix prefix
+
+    - name: Test
+      working-directory: build
+      run: ctest --output-on-failure -C Release -j 2
