@@ -1,18 +1,6 @@
 # sfml-example
 
-This is the sfml-example project.
+This project is an example project generated with [cmake-init][1]. It's just a
+minimal "Hello world" style application that shows off using SFML.
 
-# Building and installing
-
-See the [BUILDING](BUILDING.md) document.
-
-# Contributing
-
-See the [CONTRIBUTING](CONTRIBUTING.md) document.
-
-# Licensing
-
-<!--
-Please go to https://choosealicense.com/ and choose a license that fits your
-needs. GNU GPLv3 is a pretty nice option ;-)
--->
+[1]: https://github.com/friendlyanon/cmake-init
