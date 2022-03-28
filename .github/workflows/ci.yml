@@ -50,9 +50,10 @@ jobs:
 
     - name: Install SFML system dependencies
       if: matrix.os == 'ubuntu-latest'
-      run: |
+      run: >-
         sudo apt-get update -qq
-        sudo apt-get install libx11-dev libxrandr-dev libxi-dev libudev-dev \
+
+        sudo apt-get install libx11-dev libxrandr-dev libxi-dev libudev-dev
         libgl1-mesa-dev -y -q
 
     - name: Install vcpkg
